@@ -6,6 +6,8 @@ import { RoomEnum, RoomsByKey } from "./rooms.js";
 /** @typedef {import("./endings.js").Ending} Ending */
 /** @typedef {import("./rooms.js").Room} Room */
 /** @typedef {import("./rooms.js").Choice} RoomChoice */
+/** @typedef {Record<string, unknown>} RoomState */
+/** @typedef {Record<string, RoomState>} RoomsState */
 
 const STORAGE_KEY = "endings";
 const GRID_SELECTOR = "[data-endings-grid]";
@@ -14,6 +16,16 @@ const STORY_TITLE_SELECTOR = "[data-room-title]";
 const STORY_DESCRIPTION_SELECTOR = "[data-room-description]";
 const STORY_OPTIONS_SELECTOR = "[data-room-options]";
 const STORY_FEEDBACK_SELECTOR = "[data-story-feedback]";
+
+/**
+ * @returns {RoomsState}
+ */
+function createInitialRoomsState() {
+   return Object.keys(RoomsByKey).reduce((acc, roomKey) => {
+      acc[roomKey] = {};
+      return acc;
+   }, /** @type {RoomsState} */ ({}));
+}
 
 /**
  * @param {readonly Ending[]} endings
@@ -314,6 +326,7 @@ function createInitialState() {
       currentRoom: /** @type {string} */ (RoomEnum.ENTRANCE),
       visitedRooms: new Set(),
       isGameOver: false,
+      rooms: createInitialRoomsState(),
    };
 }
 
@@ -333,8 +346,8 @@ function handleChoiceSelection(choice, state, helpers, ui) {
       return;
    }
 
-   if (choice.postChoiceText && ui.feedback) {
-      helpers.narrate(choice.postChoiceText);
+   if (choice.result && ui.feedback) {
+      helpers.narrate(choice.result);
    }
 
    const nextRoom = RoomsByKey[state.currentRoom];

@@ -7,6 +7,7 @@ import { EndingEnum } from "./endings.js";
  * @property {string} currentRoom
  * @property {Set<string>} visitedRooms
  * @property {boolean} isGameOver
+ * @property {Record<string, Record<string, unknown>>} rooms
  */
 
 /**
@@ -24,7 +25,7 @@ import { EndingEnum } from "./endings.js";
  *    Pure check that returns true when this option should be visible. Runs on every render.
  * @property {string} text
  *    The label shown before the player selects the option.
- * @property {string} [postChoiceText]
+ * @property {string} [result]
  *    Optional narration displayed immediately after the choice is taken.
  * @property {(state: GameStateSnapshot, helpers: ChoiceHelpers) => void} onChoose
  *    Executes the consequences of the selection (update stats, move rooms, unlock endings, etc.).
@@ -51,27 +52,63 @@ const RoomEnum = Object.freeze({
 const RoomList = [
    {
       key: RoomEnum.ENTRANCE,
-      description:
-         "Lightning skitters across the spire's iron crown while rain needles your coat. The tower door stands ajar—dark, expectant.",
+      description: "The manor stands before you, dark and foreboding.",
       choices: [
          {
-            text: "Enter the tower",
-            postChoiceText: "You slip through the stone archway before your courage fades.",
             precondition: () => true,
+            text: "Enter through the front door",
+            result: "",
             onChoose: (_state, helpers) => {
                helpers.gotoRoom(RoomEnum.FRONT_ROOM);
             },
          },
          {
-            text: "Get the heck away",
-            postChoiceText:
-               "Better drenched than dead—you bolt back down the cliff path, vowing to forget this place.",
-            precondition: () => true,
-            onChoose: (_state, helpers) => {
+            precondition: (state) => !state.rooms[RoomEnum.ENTRANCE].hasPondered,
+            text: "Wait, what's going on?",
+            result: `You take a moment to gather your bearings.
+               
+               You look around and find yourself at the entrance of large dark-wooded manor. The porch shows signs of neglect--peeling paint, uneven boards, and greenery peeking up through cracks. Around you is a forest, vibrant and green and tall, in stark contrast to the dilapidated building. You stand there and close your eyes, trying to recall how you got here, why you're here, what was going on, really any clues to your situation. But your mind is stubbornly blank.`,
+            onChoose: (state, helpers) => {
+               state.rooms[RoomEnum.ENTRANCE].hasPondered = true;
                helpers.unlockEnding(EndingEnum.COWARD);
                helpers.endGame();
             },
          },
+         {
+            precondition: (state) => state.rooms[RoomEnum.ENTRANCE].hasPondered,
+            onChoose: (_state, helpers) => {
+               helpers.unlockEnding(EndingEnum.PARADOX);
+               helpers.endGame();
+            },
+            text: "Think harder about your situation",
+            result: `You force yourself to concentrate. You feel a slight pressure in your head. You get the odd sensation that you're playing tug-of-war with yourself. What's going on? You focus on recalling the most recent memory of how you arrived--even of simply walking through the rusted-over wrought-iron gate that stands a stone's throw away. And yet, as you push to remember, you feel a force resisting your efforts, and you're unwillingly pulled out of your contemplations.
+            
+            When you open your eyes, you're shocked to find yourself sweating and your body tense, as though bracing itself for impact. More alarmingly, the sun's position has shifted significantly. You're breathing heavily. Your body feels as though it's just finished a harsh sprint. What was going on?
+            
+            In regaining your breath and slowly coming to your senses, you become aware of two things.
+            
+            The first, you feel a weight on your back and realize you're carrying a rucksack.
+            
+            The second, you realize that despite your close proximity to the forest and the manor, you haven't heard a single sound since arriving aside from your own breathing.`;
+            onChoose: (_state, helpers) => {
+               _state.rooms[RoomEnum.ENTRANCE].hasPonderedAgain = true;
+               _state.rooms[RoomEnum.ENTRANCE].hasPondered = false;
+            },
+         },
+         {
+            precondition: (state) => state.rooms[RoomEnum.ENTRANCE].hasPonderedAgain,
+            text: "Inspect the rucksack",
+            result: `An ornate spellbook with an odd collection of miscellaneous items: some silver thread, an empty snail shell, a polished black stone, a plant of sorts with a strong sulfuric smell--things that seem to have no relation to one another. Flipping through the spellbook, you stare at the writing and feel an air of familiarity. The writing. It's by your own hand. You don't have a single memory of filling the pages, but somehow you distinctly know that this is your work. A sense of pride wells up in you, though you can't place why.
+
+            As you rifle through the other items, you find a folded piece of parchment tucked at the end. It has rough edges, as though ripped from a larger sheet. It has exactly two words:
+            
+            "FIND ME"
+            
+            The handwriting is not your own.`,
+            onChoose: (state, helpers) => {
+               helpers.gotoRoom(RoomEnum.FRONT_ROOM);
+            },
+         }
       ],
    },
    {
@@ -81,11 +118,11 @@ const RoomList = [
       choices: [
          {
             text: "Catch your breath and take stock",
-            postChoiceText:
+            result:
                "The silence feels like a held breath. More paths will reveal themselves soon...",
-            precondition: () => true,
-            onChoose: () => {
-               /* Placeholder action */
+            precondition: (state) => !state.rooms[RoomEnum.FRONT_ROOM].hasTakenStock,
+            onChoose: (state) => {
+               state.rooms[RoomEnum.FRONT_ROOM].hasTakenStock = true;
             },
          },
       ],
