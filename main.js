@@ -1,7 +1,11 @@
 // @ts-check
 
-import { AllEndings } from "./endings.js";
+import { ALL_ENDINGS } from "./endings.js";
 import { RoomEnum, RoomsByKey } from "./rooms.js";
+
+/** @typedef {import("./endings.js").Ending} Ending */
+/** @typedef {import("./rooms.js").Room} Room */
+/** @typedef {import("./rooms.js").Choice} RoomChoice */
 
 const STORAGE_KEY = "endings";
 const GRID_SELECTOR = "[data-endings-grid]";
@@ -12,7 +16,7 @@ const STORY_OPTIONS_SELECTOR = "[data-room-options]";
 const STORY_FEEDBACK_SELECTOR = "[data-story-feedback]";
 
 /**
- * @param {readonly import("./endings.js").Ending[]} endings
+ * @param {readonly Ending[]} endings
  * @returns {Array<[string, boolean]>}
  */
 function ensureSeedData(endings) {
@@ -22,7 +26,7 @@ function ensureSeedData(endings) {
 }
 
 /**
- * @param {readonly import("./endings.js").Ending[]} endings
+ * @param {readonly Ending[]} endings
  * @returns {Record<string, boolean>}
  */
 function loadUnlockedMap(endings) {
@@ -55,14 +59,11 @@ function persistUnlockedMap(unlockedMap) {
 }
 
 /**
- * @param {readonly import("./endings.js").Ending[]} endings
- */
-/**
  * @typedef {{ root: HTMLDivElement; title: HTMLDivElement; body: HTMLDivElement }} TooltipElements
  */
 
 /**
- * @param {readonly import("./endings.js").Ending[]} endings
+ * @param {readonly Ending[]} endings
  * @param {TooltipElements} tooltip
  * @param {Record<string, boolean>} [unlockedOverride]
  */
@@ -219,7 +220,7 @@ function setFeedback(node, text) {
 }
 
 /**
- * @param {import("./rooms.js").Room} room
+ * @param {Room} room
  * @param {Set<string>} visitedRooms
  */
 function resolveRoomDescription(room, visitedRooms) {
@@ -245,7 +246,7 @@ function formatRoomTitle(key) {
 }
 
 /**
- * @param {import("./rooms.js").Room} room
+ * @param {Room} room
  * @param {StoryUIElements} ui
  * @param {GameState} state
  * @param {ChoiceHelpers} helpers
@@ -317,7 +318,7 @@ function createInitialState() {
 }
 
 /**
- * @param {import("./rooms.js").Choice} choice
+ * @param {RoomChoice} choice
  * @param {GameState} state
  * @param {ChoiceHelpers} helpers
  * @param {StoryUIElements} ui
@@ -341,15 +342,13 @@ function handleChoiceSelection(choice, state, helpers, ui) {
 }
 
 function init() {
-   const endings = Array.isArray(AllEndings) ? AllEndings : [];
-
-   if (!endings.length) {
-      console.error("No endings data found; ensure endings.js exports AllEndings correctly.");
+   if (!ALL_ENDINGS.length) {
+      console.error("No endings data found; ensure endings.js exports ALL_ENDINGS correctly.");
       return;
    }
 
    const tooltip = createTooltip();
-   let unlockedMap = loadUnlockedMap(endings);
+   let unlockedMap = loadUnlockedMap(ALL_ENDINGS);
    const ui = queryStoryElements();
    const state = createInitialState();
 
@@ -366,14 +365,14 @@ function init() {
          if (unlockedMap[endingKey]) return;
          unlockedMap = { ...unlockedMap, [endingKey]: true };
          persistUnlockedMap(unlockedMap);
-         renderEndingsGrid(endings, tooltip, unlockedMap);
+         renderEndingsGrid(ALL_ENDINGS, tooltip, unlockedMap);
       },
       endGame: () => {
          state.isGameOver = true;
       },
    };
 
-   renderEndingsGrid(endings, tooltip, unlockedMap);
+   renderEndingsGrid(ALL_ENDINGS, tooltip, unlockedMap);
    const startingRoom = RoomsByKey[state.currentRoom];
    renderStory(startingRoom, ui, state, helpers);
 }

@@ -24,7 +24,7 @@ const EndingEnum = Object.freeze({
  */
 
 /** @type {readonly Ending[]} */
-const AllEndings = [
+const ALL_ENDINGS = [
    {
       key: EndingEnum.COWARD,
       title: "The Coward",
@@ -93,5 +93,4 @@ const AllEndings = [
 //    ).EndingsData = endingsBundle;
 // }
 
-export { AllEndings, EndingEnum };
-export default EndingEnum;
+export { ALL_ENDINGS, EndingEnum };
