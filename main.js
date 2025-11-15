@@ -6,7 +6,8 @@ import { RoomEnum, RoomsByKey } from "./rooms.js";
 /** @typedef {import("./endings.js").Ending} Ending */
 /** @typedef {import("./rooms.js").Room} Room */
 /** @typedef {import("./rooms.js").Choice} RoomChoice */
-/** @typedef {Record<string, unknown>} RoomState */
+/** @typedef {{ hasSpellbook: boolean }} CharacterState */
+/** @typedef {Record<string, any>} RoomState */
 /** @typedef {Record<string, RoomState>} RoomsState */
 
 const STORAGE_KEY = "endings";
@@ -25,6 +26,15 @@ function createInitialRoomsState() {
       acc[roomKey] = {};
       return acc;
    }, /** @type {RoomsState} */ ({}));
+}
+
+/**
+ * @returns {CharacterState}
+ */
+function createInitialCharacterState() {
+   return {
+      hasSpellbook: false,
+   };
 }
 
 /**
@@ -318,7 +328,7 @@ function renderStory(room, ui, state, helpers) {
 
 /**
  * @typedef {ReturnType<typeof createInitialState>} GameState
- * @typedef {{ gotoRoom: (roomKey: string) => void; narrate: (text: string) => void; unlockEnding: (endingKey: string) => void; endGame: () => void }} ChoiceHelpers
+ * @typedef {{ gotoRoom: (roomKey: string) => void; narrate: (text: string) => void; unlockEnding: (endingKey: string) => void; endGame: () => void; adjustParanoia: (delta: number) => void }} ChoiceHelpers
  */
 
 function createInitialState() {
@@ -327,6 +337,8 @@ function createInitialState() {
       visitedRooms: new Set(),
       isGameOver: false,
       rooms: createInitialRoomsState(),
+      character: createInitialCharacterState(),
+      paranoia: 0,
    };
 }
 
@@ -382,6 +394,10 @@ function init() {
       },
       endGame: () => {
          state.isGameOver = true;
+      },
+      adjustParanoia: (delta) => {
+         const next = state.paranoia + delta;
+         state.paranoia = Math.max(0, next);
       },
    };
 
