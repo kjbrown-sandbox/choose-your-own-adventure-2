@@ -9,17 +9,11 @@
    <body>
       <div class="app-shell">
          <section class="story-panel">
-            <h1>The Midnight Atrium</h1>
-            <p>
-               Thick velvet curtains hush the thunder as you reach for the tarnished knob. Every
-               decision echoes through the atrium, but for now, this is just placeholder text to
-               stand in for your interactive fiction UI.
-            </p>
-            <p>
-               Center your forthcoming narrative controls here: room descriptions, option lists,
-               stat readouts—whatever the story demands. The endings grid to the right keeps track
-               of how many destinies your reader has already unearthed.
-            </p>
+            <p class="story-panel__eyebrow">Current scene</p>
+            <h1 class="story-panel__title" data-room-title>Loading…</h1>
+            <p class="story-panel__description" data-room-description>The night hangs heavy…</p>
+            <div class="story-options" data-room-options></div>
+            <p class="story-panel__feedback" data-story-feedback hidden></p>
          </section>
 
          <aside class="grid-panel">
